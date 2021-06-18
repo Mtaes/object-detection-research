@@ -52,6 +52,6 @@ def get_dataloaders(DatasetClass, path_to_dataset, splits:dict, transforms:dict,
             collate_fn=collate_fn,
             num_workers=num_workers,# Windows has a problem with num_workers > 0 https://discuss.pytorch.org/t/errors-when-using-num-workers-0-in-dataloader/97564/5
             shuffle=split=='train',
-            pin_memory=True
+            pin_memory=True# https://discuss.pytorch.org/t/when-to-set-pin-memory-to-true/19723
             )
     return data_loader_dict
