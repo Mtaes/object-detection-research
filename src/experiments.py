@@ -34,8 +34,8 @@ def experiment_1():
 
     trainer = get_trainer(
         max_epochs=15,
-        min_delta=.001,
-        patience=4,
+        min_delta=.0001,
+        patience=5,
         version=ID
     )
     trainer.fit(model, data_loaders['train'], data_loaders['validate'])
