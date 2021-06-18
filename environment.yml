@@ -1,0 +1,17 @@
+name: odrenv
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - pytorch
+  - torchvision
+  - pytorch-lightning
+  - cudatoolkit
+  - pillow
+  - matplotlib
+  - numpy
+  - pandas
+  - jupyter
+  - pycocotools
