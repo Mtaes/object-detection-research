@@ -22,7 +22,7 @@ def get_coco_stats(preds, gt):
     return coco_dict
 
 
-def get_trainer(max_epochs:int, min_delta:float, patience:int, gpus:int=1, version=None, max_time:str='00:08:40:00'):
+def get_trainer(max_epochs:int, min_delta:float, patience:int, gpus:int=1, version=None, auto_lr_find:bool=False, max_time:str='00:08:40:00'):
     trainer = Trainer(
         gpus=gpus,
         max_epochs=max_epochs,
@@ -35,7 +35,8 @@ def get_trainer(max_epochs:int, min_delta:float, patience:int, gpus:int=1, versi
             EarlyStopping(monitor='coco_stat_0', min_delta=min_delta, patience=patience, mode='max'),
             ModelCheckpoint(monitor='coco_stat_0', mode='max')
         ],
-        deterministic=True
+        deterministic=True,
+        auto_lr_find=auto_lr_find
     )
     return trainer
 

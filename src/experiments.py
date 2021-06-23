@@ -26,11 +26,11 @@ def experiment_1():
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
-    def optimizer_fn(params):
-        return SGD(params, lr=.005)
+    def optimizer_fn(params, lr):
+        return SGD(params, lr=lr)
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
-    model = ObjectDetector(model, optimizer_fn, lr_scheduler_fn)
+    model = ObjectDetector(model, .005, optimizer_fn, lr_scheduler_fn)
 
     trainer = get_trainer(
         max_epochs=15,
@@ -57,11 +57,11 @@ def experiment_2():
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
-    def optimizer_fn(params):
-        return SGD(params, lr=.005)
+    def optimizer_fn(params, lr):
+        return SGD(params, lr=lr)
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
-    model = ObjectDetector(model, optimizer_fn, lr_scheduler_fn)
+    model = ObjectDetector(model, .005, optimizer_fn, lr_scheduler_fn)
 
     trainer = get_trainer(
         max_epochs=15,
@@ -88,11 +88,11 @@ def experiment_3():
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
-    def optimizer_fn(params):
-        return SGD(params, lr=.02)
+    def optimizer_fn(params, lr):
+        return SGD(params, lr=lr)
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
-    model = ObjectDetector(model, optimizer_fn, lr_scheduler_fn)
+    model = ObjectDetector(model, .02, optimizer_fn, lr_scheduler_fn)
 
     trainer = get_trainer(
         max_epochs=15,
@@ -119,11 +119,11 @@ def experiment_4():
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
-    def optimizer_fn(params):
-        return SGD(params, lr=.02)
+    def optimizer_fn(params, lr):
+        return SGD(params, lr=lr)
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
-    model = ObjectDetector(model, optimizer_fn, lr_scheduler_fn)
+    model = ObjectDetector(model, .02, optimizer_fn, lr_scheduler_fn)
 
     trainer = get_trainer(
         max_epochs=15,
@@ -150,11 +150,11 @@ def experiment_5():
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
-    def optimizer_fn(params):
-        return SGD(params, lr=.005)
+    def optimizer_fn(params, lr):
+        return SGD(params, lr=lr)
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
-    model = ObjectDetector(model, optimizer_fn, lr_scheduler_fn)
+    model = ObjectDetector(model, .005, optimizer_fn, lr_scheduler_fn)
 
     trainer = get_trainer(
         max_epochs=15,
@@ -181,11 +181,11 @@ def experiment_6():
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
-    def optimizer_fn(params):
-        return SGD(params, lr=.005)
+    def optimizer_fn(params, lr):
+        return SGD(params, lr=lr)
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
-    model = ObjectDetector(model, optimizer_fn, lr_scheduler_fn)
+    model = ObjectDetector(model, .005, optimizer_fn, lr_scheduler_fn)
 
     trainer = get_trainer(
         max_epochs=15,
