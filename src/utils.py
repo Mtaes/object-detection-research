@@ -1,4 +1,5 @@
 import os
+from typing import Optional, Union
 from coco.coco_utils import convert_to_coco_api
 from coco.coco_eval import CocoEvaluator
 from coco.utils import collate_fn
@@ -41,15 +42,19 @@ def get_trainer(max_epochs:int, min_delta:float, patience:int, gpus:int=1, versi
     return trainer
 
 
-def get_dataloaders(DatasetClass, path_to_dataset, splits:dict, transforms:dict, batch_size:dict, num_workers:int=cpu_count()):
+def get_dataloaders(DatasetClass, path_to_dataset, splits:dict, batch_size:Union[dict, int], transforms:Optional[dict]=None, num_workers:Optional[int]=None):
+    if num_workers is None:
+        num_workers = cpu_count()
+    if transforms is None:
+        transforms = {}
     dataset_dict = {}
     for split in splits:
-        dataset_dict[split] = DatasetClass(path_to_dataset, splits[split], transforms[split])
+        dataset_dict[split] = DatasetClass(path_to_dataset, splits[split], transforms.get(split))
     data_loader_dict = {}
     for split in splits:
         data_loader_dict[split] = DataLoader(
             dataset_dict[split],
-            batch_size=batch_size[split],
+            batch_size=batch_size if isinstance(batch_size, int) else batch_size[split],
             collate_fn=collate_fn,
             num_workers=num_workers,# Windows has a problem with num_workers > 0 https://discuss.pytorch.org/t/errors-when-using-num-workers-0-in-dataloader/97564/5
             shuffle=split=='train',

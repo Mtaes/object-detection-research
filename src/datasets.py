@@ -1,8 +1,10 @@
 import os
 import json
 import torch
+import numpy as np
 from torch.utils.data import Dataset
 from PIL import Image
+from transforms import get_to_tensor
 
 
 PATH_TO_BEESDATASET = os.path.join('..', 'data', 'BeesDataset')
@@ -18,7 +20,7 @@ class BeesDataset(Dataset):
     'Represents BeesDataset for dataloaders.'
     def __init__(self, root, split, transforms=None):
         self.root = root
-        self.transforms = transforms
+        self.transforms = get_to_tensor() if transforms is None else transforms
         with open(os.path.join(root, 'boxes.json'), 'r') as input_file:
             self.data = json.load(input_file)
         self.data = list(filter(lambda e: len(e['boxes']) > 0 and e['image_name'] in split, self.data))
@@ -34,24 +36,20 @@ class BeesDataset(Dataset):
                 box['xmin'] + box['width'],
                 box['ymin'] + box['height']
             ])
-        boxes = torch.as_tensor(boxes, dtype=torch.float32)
-        # there is only one class
-        labels = torch.ones((len(boxes),), dtype=torch.int64)
+        labels = np.ones((len(boxes),))
         image_id = torch.tensor([idx])
-        area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
-        # suppose all instances are not crowd
-        iscrowd = torch.zeros((len(boxes),), dtype=torch.int64)
+        iscrowd = np.zeros((len(boxes),))
         img_path = os.path.join(self.root, 'images', file_name)
         img = Image.open(img_path).convert('RGB')
+        transformed = self.transforms(image=np.asarray(img), bboxes=boxes, labels=labels, iscrowd=iscrowd)
         target = {}
-        target['boxes'] = boxes
-        target['labels'] = labels
+        target['boxes'] = torch.as_tensor(transformed['bboxes'], dtype=torch.float32)
+        target['labels'] = torch.as_tensor(transformed['labels'], dtype=torch.int64)
         target['image_id'] = image_id
-        target['area'] = area
-        target['iscrowd'] = iscrowd
-        if self.transforms is not None:
-            img, target = self.transforms(img, target)
-        return img, target
+        compute_area = lambda boxes: (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
+        target['area'] = compute_area(target['boxes'])
+        target['iscrowd'] = torch.as_tensor(transformed['iscrowd'], dtype=torch.int64)
+        return transformed['image'], target
 
     def __len__(self):
         return len(self.data)

@@ -1,5 +1,4 @@
 from datasets import PATH_TO_BEESDATASET, get_dataset_split, BeesDataset
-from transforms import Compose, ToTensor
 from utils import get_dataloaders, get_trainer
 from models import ObjectDetector
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
@@ -19,8 +18,7 @@ def experiment_1():
         DatasetClass=BeesDataset,
         path_to_dataset=PATH_TO_BEESDATASET,
         splits=splits,
-        transforms={'train': Compose([ToTensor()]), 'validate': Compose([ToTensor()]), 'test': Compose([ToTensor()])},
-        batch_size={'train': 1, 'validate': 1, 'test': 1}
+        batch_size=1
     )
 
     model = fasterrcnn_resnet50_fpn(pretrained=True)
@@ -50,8 +48,7 @@ def experiment_2():
         DatasetClass=BeesDataset,
         path_to_dataset=PATH_TO_BEESDATASET,
         splits=splits,
-        transforms={'train': Compose([ToTensor()]), 'validate': Compose([ToTensor()]), 'test': Compose([ToTensor()])},
-        batch_size={'train': 4, 'validate': 4, 'test': 4}
+        batch_size=4
     )
 
     model = fasterrcnn_resnet50_fpn(pretrained=True)
@@ -81,8 +78,7 @@ def experiment_3():
         DatasetClass=BeesDataset,
         path_to_dataset=PATH_TO_BEESDATASET,
         splits=splits,
-        transforms={'train': Compose([ToTensor()]), 'validate': Compose([ToTensor()]), 'test': Compose([ToTensor()])},
-        batch_size={'train': 1, 'validate': 1, 'test': 1}
+        batch_size=1
     )
 
     model = fasterrcnn_resnet50_fpn(pretrained=True)
@@ -112,8 +108,7 @@ def experiment_4():
         DatasetClass=BeesDataset,
         path_to_dataset=PATH_TO_BEESDATASET,
         splits=splits,
-        transforms={'train': Compose([ToTensor()]), 'validate': Compose([ToTensor()]), 'test': Compose([ToTensor()])},
-        batch_size={'train': 4, 'validate': 4, 'test': 4}
+        batch_size=4
     )
 
     model = fasterrcnn_resnet50_fpn(pretrained=True)
@@ -143,8 +138,7 @@ def experiment_5():
         DatasetClass=BeesDataset,
         path_to_dataset=PATH_TO_BEESDATASET,
         splits=splits,
-        transforms={'train': Compose([ToTensor()]), 'validate': Compose([ToTensor()]), 'test': Compose([ToTensor()])},
-        batch_size={'train': 1, 'validate': 1, 'test': 1}
+        batch_size=1
     )
 
     model = fasterrcnn_resnet50_fpn(pretrained=True)
@@ -174,8 +168,7 @@ def experiment_6():
         DatasetClass=BeesDataset,
         path_to_dataset=PATH_TO_BEESDATASET,
         splits=splits,
-        transforms={'train': Compose([ToTensor()]), 'validate': Compose([ToTensor()]), 'test': Compose([ToTensor()])},
-        batch_size={'train': 4, 'validate': 4, 'test': 4}
+        batch_size=4
     )
 
     model = fasterrcnn_resnet50_fpn(pretrained=True)
@@ -205,8 +198,7 @@ def experiment_7():
         DatasetClass=BeesDataset,
         path_to_dataset=PATH_TO_BEESDATASET,
         splits=splits,
-        transforms={'train': Compose([ToTensor()]), 'validate': Compose([ToTensor()]), 'test': Compose([ToTensor()])},
-        batch_size={'train': 4, 'validate': 4, 'test': 4}
+        batch_size=4
     )
 
     model = fasterrcnn_resnet50_fpn(pretrained=True)
@@ -238,8 +230,7 @@ def experiment_8():
         DatasetClass=BeesDataset,
         path_to_dataset=PATH_TO_BEESDATASET,
         splits=splits,
-        transforms={'train': Compose([ToTensor()]), 'validate': Compose([ToTensor()]), 'test': Compose([ToTensor()])},
-        batch_size={'train': 4, 'validate': 4, 'test': 4}
+        batch_size=4
     )
 
     model = fasterrcnn_resnet50_fpn(pretrained=True)
@@ -269,8 +260,7 @@ def experiment_9():
         DatasetClass=BeesDataset,
         path_to_dataset=PATH_TO_BEESDATASET,
         splits=splits,
-        transforms={'train': Compose([ToTensor()]), 'validate': Compose([ToTensor()]), 'test': Compose([ToTensor()])},
-        batch_size={'train': 4, 'validate': 4, 'test': 4}
+        batch_size=4
     )
 
     model = fasterrcnn_resnet50_fpn(pretrained=True)
@@ -300,8 +290,7 @@ def experiment_10():
         DatasetClass=BeesDataset,
         path_to_dataset=PATH_TO_BEESDATASET,
         splits=splits,
-        transforms={'train': Compose([ToTensor()]), 'validate': Compose([ToTensor()]), 'test': Compose([ToTensor()])},
-        batch_size={'train': 4, 'validate': 4, 'test': 4}
+        batch_size=4
     )
 
     model = fasterrcnn_resnet50_fpn(pretrained=True)
@@ -331,8 +320,7 @@ def experiment_11():
         DatasetClass=BeesDataset,
         path_to_dataset=PATH_TO_BEESDATASET,
         splits=splits,
-        transforms={'train': Compose([ToTensor()]), 'validate': Compose([ToTensor()]), 'test': Compose([ToTensor()])},
-        batch_size={'train': 4, 'validate': 4, 'test': 4}
+        batch_size=4
     )
 
     model = fasterrcnn_resnet50_fpn(pretrained=True)
@@ -360,8 +348,7 @@ def experiment_12():
         DatasetClass=BeesDataset,
         path_to_dataset=PATH_TO_BEESDATASET,
         splits=splits,
-        transforms={'train': Compose([ToTensor()]), 'validate': Compose([ToTensor()]), 'test': Compose([ToTensor()])},
-        batch_size={'train': 4, 'validate': 4, 'test': 4}
+        batch_size=4
     )
 
     model = fasterrcnn_resnet50_fpn(pretrained=True)

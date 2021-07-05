@@ -15,3 +15,5 @@ dependencies:
   - pandas
   - jupyter
   - pycocotools
+  - imgaug
+  - albumentations
