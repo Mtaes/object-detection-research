@@ -1,10 +1,10 @@
-from datasets import PATH_TO_BEESDATASET, get_dataset_split, BeesDataset
-from utils import get_dataloaders, get_trainer
-from models import ObjectDetector
+from pytorch_lightning import seed_everything
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torch.optim import SGD, lr_scheduler, Adam
-from pytorch_lightning import seed_everything
+from datasets import PATH_TO_BEESDATASET, get_dataset_split, BeesDataset
+from utils import get_dataloaders, get_trainer
+from models import ObjectDetector
 from transforms import get_horizontal_flip, get_resize_image
 
 

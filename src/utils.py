@@ -1,13 +1,13 @@
 import os
 from typing import Optional, Union
-from coco.coco_utils import convert_to_coco_api
-from coco.coco_eval import CocoEvaluator
-from coco.utils import collate_fn
+from multiprocessing import cpu_count
+from torch.utils.data import DataLoader
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import LearningRateMonitor, EarlyStopping, ModelCheckpoint
-from torch.utils.data import DataLoader
-from multiprocessing import cpu_count
+from coco.coco_utils import convert_to_coco_api
+from coco.coco_eval import CocoEvaluator
+from coco.utils import collate_fn
 
 
 def get_coco_stats(preds, gt):
