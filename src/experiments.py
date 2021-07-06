@@ -5,6 +5,7 @@ from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torch.optim import SGD, lr_scheduler, Adam
 from pytorch_lightning import seed_everything
+from transforms import get_horizontal_flip, get_resize_image
 
 
 SEED = 42
@@ -348,26 +349,23 @@ def experiment_12():
         DatasetClass=BeesDataset,
         path_to_dataset=PATH_TO_BEESDATASET,
         splits=splits,
-        batch_size=4
+        batch_size=4,
+        transforms={'train': get_horizontal_flip(), 'validate': get_resize_image(), 'test': get_resize_image()}
     )
 
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
     def optimizer_fn(params, lr):
-        return SGD(params, lr=lr, momentum=.9, weight_decay=.0001)
-    def lr_scheduler_fn(optimizer):
-        return lr_scheduler.StepLR(optimizer, step_size=3)
-    model = ObjectDetector(model, .02, optimizer_fn, lr_scheduler_fn)
+        return Adam(params, lr=lr)
+    model = ObjectDetector(model, .001, optimizer_fn)
 
     trainer = get_trainer(
-        max_epochs=15,
+        max_epochs=30,
         min_delta=.001,
-        patience=5,
-        version=ID,
-        auto_lr_find=True
+        patience=7,
+        version=ID
     )
-    trainer.tune(model, data_loaders['train'], data_loaders['validate'])
     trainer.fit(model, data_loaders['train'], data_loaders['validate'])
     trainer.test(test_dataloaders=data_loaders['test'])
 
