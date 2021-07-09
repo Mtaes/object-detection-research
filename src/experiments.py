@@ -3,8 +3,8 @@ from torchvision.models.detection import fasterrcnn_resnet50_fpn
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torch.optim import SGD, lr_scheduler, Adam
 
-from datasets import PATH_TO_BEESDATASET, get_dataset_split, BeesDataset
-from utils import get_dataloaders, get_trainer
+from datasets import BeesDataModule
+from utils import get_trainer
 from models import ObjectDetector
 from transforms import get_horizontal_flip, get_resize_image
 
@@ -15,14 +15,10 @@ SEED = 42
 def experiment_1():
     ID = 1
     seed_everything(SEED, workers=True)
-    splits = get_dataset_split(PATH_TO_BEESDATASET, 1)
-    data_loaders = get_dataloaders(
-        DatasetClass=BeesDataset,
-        path_to_dataset=PATH_TO_BEESDATASET,
-        splits=splits,
+    data_module = BeesDataModule(
+        split_id=1,
         batch_size=1
     )
-
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
@@ -31,28 +27,23 @@ def experiment_1():
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
     model = ObjectDetector(model, .005, optimizer_fn, lr_scheduler_fn)
-
     trainer = get_trainer(
         max_epochs=15,
         min_delta=.001,
         patience=5,
         version=ID
     )
-    trainer.fit(model, data_loaders['train'], data_loaders['validate'])
-    trainer.test(test_dataloaders=data_loaders['test'])
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
 
 
 def experiment_2():
     ID = 2
     seed_everything(SEED, workers=True)
-    splits = get_dataset_split(PATH_TO_BEESDATASET, 1)
-    data_loaders = get_dataloaders(
-        DatasetClass=BeesDataset,
-        path_to_dataset=PATH_TO_BEESDATASET,
-        splits=splits,
+    data_module = BeesDataModule(
+        split_id=1,
         batch_size=4
     )
-
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
@@ -61,28 +52,23 @@ def experiment_2():
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
     model = ObjectDetector(model, .005, optimizer_fn, lr_scheduler_fn)
-
     trainer = get_trainer(
         max_epochs=15,
         min_delta=.001,
         patience=5,
         version=ID
     )
-    trainer.fit(model, data_loaders['train'], data_loaders['validate'])
-    trainer.test(test_dataloaders=data_loaders['test'])
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
 
 
 def experiment_3():
     ID = 3
     seed_everything(SEED, workers=True)
-    splits = get_dataset_split(PATH_TO_BEESDATASET, 1)
-    data_loaders = get_dataloaders(
-        DatasetClass=BeesDataset,
-        path_to_dataset=PATH_TO_BEESDATASET,
-        splits=splits,
+    data_module = BeesDataModule(
+        split_id=1,
         batch_size=1
     )
-
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
@@ -91,28 +77,23 @@ def experiment_3():
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
     model = ObjectDetector(model, .02, optimizer_fn, lr_scheduler_fn)
-
     trainer = get_trainer(
         max_epochs=15,
         min_delta=.001,
         patience=5,
         version=ID
     )
-    trainer.fit(model, data_loaders['train'], data_loaders['validate'])
-    trainer.test(test_dataloaders=data_loaders['test'])
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
 
 
 def experiment_4():
     ID = 4
     seed_everything(SEED, workers=True)
-    splits = get_dataset_split(PATH_TO_BEESDATASET, 1)
-    data_loaders = get_dataloaders(
-        DatasetClass=BeesDataset,
-        path_to_dataset=PATH_TO_BEESDATASET,
-        splits=splits,
+    data_module = BeesDataModule(
+        split_id=1,
         batch_size=4
     )
-
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
@@ -121,28 +102,23 @@ def experiment_4():
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
     model = ObjectDetector(model, .02, optimizer_fn, lr_scheduler_fn)
-
     trainer = get_trainer(
         max_epochs=15,
         min_delta=.001,
         patience=5,
         version=ID
     )
-    trainer.fit(model, data_loaders['train'], data_loaders['validate'])
-    trainer.test(test_dataloaders=data_loaders['test'])
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
 
 
 def experiment_5():
     ID = 5
     seed_everything(SEED, workers=True)
-    splits = get_dataset_split(PATH_TO_BEESDATASET, 2)
-    data_loaders = get_dataloaders(
-        DatasetClass=BeesDataset,
-        path_to_dataset=PATH_TO_BEESDATASET,
-        splits=splits,
+    data_module = BeesDataModule(
+        split_id=2,
         batch_size=1
     )
-
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
@@ -151,28 +127,23 @@ def experiment_5():
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
     model = ObjectDetector(model, .005, optimizer_fn, lr_scheduler_fn)
-
     trainer = get_trainer(
         max_epochs=15,
         min_delta=.001,
         patience=5,
         version=ID
     )
-    trainer.fit(model, data_loaders['train'], data_loaders['validate'])
-    trainer.test(test_dataloaders=data_loaders['test'])
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
 
 
 def experiment_6():
     ID = 6
     seed_everything(SEED, workers=True)
-    splits = get_dataset_split(PATH_TO_BEESDATASET, 2)
-    data_loaders = get_dataloaders(
-        DatasetClass=BeesDataset,
-        path_to_dataset=PATH_TO_BEESDATASET,
-        splits=splits,
+    data_module = BeesDataModule(
+        split_id=2,
         batch_size=4
     )
-
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
@@ -181,28 +152,23 @@ def experiment_6():
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
     model = ObjectDetector(model, .005, optimizer_fn, lr_scheduler_fn)
-
     trainer = get_trainer(
         max_epochs=15,
         min_delta=.001,
         patience=5,
         version=ID
     )
-    trainer.fit(model, data_loaders['train'], data_loaders['validate'])
-    trainer.test(test_dataloaders=data_loaders['test'])
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
 
 
 def experiment_7():
     ID = 7
     seed_everything(SEED, workers=True)
-    splits = get_dataset_split(PATH_TO_BEESDATASET, 2)
-    data_loaders = get_dataloaders(
-        DatasetClass=BeesDataset,
-        path_to_dataset=PATH_TO_BEESDATASET,
-        splits=splits,
+    data_module = BeesDataModule(
+        split_id=2,
         batch_size=4
     )
-
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
@@ -211,7 +177,6 @@ def experiment_7():
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
     model = ObjectDetector(model, .005, optimizer_fn, lr_scheduler_fn)
-
     trainer = get_trainer(
         max_epochs=15,
         min_delta=.001,
@@ -219,22 +184,18 @@ def experiment_7():
         version=ID,
         auto_lr_find=True
     )
-    trainer.tune(model, data_loaders['train'], data_loaders['validate'])
-    trainer.fit(model, data_loaders['train'], data_loaders['validate'])
-    trainer.test(test_dataloaders=data_loaders['test'])
+    trainer.tune(model, datamodule=data_module)
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
 
 
 def experiment_8():
     ID = 8
     seed_everything(SEED, workers=True)
-    splits = get_dataset_split(PATH_TO_BEESDATASET, 2)
-    data_loaders = get_dataloaders(
-        DatasetClass=BeesDataset,
-        path_to_dataset=PATH_TO_BEESDATASET,
-        splits=splits,
+    data_module = BeesDataModule(
+        split_id=2,
         batch_size=4
     )
-
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
@@ -243,28 +204,23 @@ def experiment_8():
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
     model = ObjectDetector(model, .02, optimizer_fn, lr_scheduler_fn)
-
     trainer = get_trainer(
         max_epochs=15,
         min_delta=.001,
         patience=5,
         version=ID
     )
-    trainer.fit(model, data_loaders['train'], data_loaders['validate'])
-    trainer.test(test_dataloaders=data_loaders['test'])
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
 
 
 def experiment_9():
     ID = 9
     seed_everything(SEED, workers=True)
-    splits = get_dataset_split(PATH_TO_BEESDATASET, 2)
-    data_loaders = get_dataloaders(
-        DatasetClass=BeesDataset,
-        path_to_dataset=PATH_TO_BEESDATASET,
-        splits=splits,
+    data_module = BeesDataModule(
+        split_id=2,
         batch_size=4
     )
-
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
@@ -273,28 +229,23 @@ def experiment_9():
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
     model = ObjectDetector(model, .02, optimizer_fn, lr_scheduler_fn)
-
     trainer = get_trainer(
         max_epochs=15,
         min_delta=.001,
         patience=5,
         version=ID
     )
-    trainer.fit(model, data_loaders['train'], data_loaders['validate'])
-    trainer.test(test_dataloaders=data_loaders['test'])
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
 
 
 def experiment_10():
     ID = 10
     seed_everything(SEED, workers=True)
-    splits = get_dataset_split(PATH_TO_BEESDATASET, 2)
-    data_loaders = get_dataloaders(
-        DatasetClass=BeesDataset,
-        path_to_dataset=PATH_TO_BEESDATASET,
-        splits=splits,
+    data_module = BeesDataModule(
+        split_id=2,
         batch_size=4
     )
-
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
@@ -303,72 +254,61 @@ def experiment_10():
     def lr_scheduler_fn(optimizer):
         return lr_scheduler.StepLR(optimizer, step_size=3)
     model = ObjectDetector(model, .02, optimizer_fn, lr_scheduler_fn)
-
     trainer = get_trainer(
         max_epochs=15,
         min_delta=.001,
         patience=5,
         version=ID
     )
-    trainer.fit(model, data_loaders['train'], data_loaders['validate'])
-    trainer.test(test_dataloaders=data_loaders['test'])
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
 
 
 def experiment_11():
     ID = 11
     seed_everything(SEED, workers=True)
-    splits = get_dataset_split(PATH_TO_BEESDATASET, 2)
-    data_loaders = get_dataloaders(
-        DatasetClass=BeesDataset,
-        path_to_dataset=PATH_TO_BEESDATASET,
-        splits=splits,
+    data_module = BeesDataModule(
+        split_id=2,
         batch_size=4
     )
-
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
     def optimizer_fn(params, lr):
         return Adam(params, lr=lr)
     model = ObjectDetector(model, .001, optimizer_fn)
-
     trainer = get_trainer(
         max_epochs=15,
         min_delta=.001,
         patience=5,
         version=ID
     )
-    trainer.fit(model, data_loaders['train'], data_loaders['validate'])
-    trainer.test(test_dataloaders=data_loaders['test'])
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
 
 
 def experiment_12():
     ID = 12
     seed_everything(SEED, workers=True)
-    splits = get_dataset_split(PATH_TO_BEESDATASET, 2)
-    data_loaders = get_dataloaders(
-        DatasetClass=BeesDataset,
-        path_to_dataset=PATH_TO_BEESDATASET,
-        splits=splits,
+    data_module = BeesDataModule(
+        split_id=2,
         batch_size=4,
         transforms={'train': get_horizontal_flip(), 'validate': get_resize_image(), 'test': get_resize_image()}
     )
-
     model = fasterrcnn_resnet50_fpn(pretrained=True)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
     def optimizer_fn(params, lr):
         return Adam(params, lr=lr)
     model = ObjectDetector(model, .001, optimizer_fn)
-
     trainer = get_trainer(
         max_epochs=30,
         min_delta=.001,
         patience=7,
         version=ID
     )
-    trainer.fit(model, data_loaders['train'], data_loaders['validate'])
-    trainer.test(test_dataloaders=data_loaders['test'])
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
 
 
 EXPERIMENTS_DICT = {
