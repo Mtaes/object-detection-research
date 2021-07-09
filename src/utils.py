@@ -1,10 +1,12 @@
 import os
 from typing import Optional, Union
 from multiprocessing import cpu_count
+
 from torch.utils.data import DataLoader
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import LearningRateMonitor, EarlyStopping, ModelCheckpoint
+
 from coco.coco_utils import convert_to_coco_api
 from coco.coco_eval import CocoEvaluator
 from coco.utils import collate_fn
@@ -23,7 +25,7 @@ def get_coco_stats(preds, gt):
     return coco_dict
 
 
-def get_trainer(max_epochs:int, min_delta:float, patience:int, gpus:int=1, version=None, auto_lr_find:bool=False, max_time:str='00:08:40:00'):
+def get_trainer(max_epochs: int, min_delta: float, patience: int, gpus: int = 1, version=None, auto_lr_find: bool = False, max_time: str = '00:08:40:00'):
     trainer = Trainer(
         gpus=gpus,
         max_epochs=max_epochs,

@@ -1,5 +1,7 @@
 from time import time
+
 from pytorch_lightning import LightningModule
+
 from utils import get_coco_stats
 
 
