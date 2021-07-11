@@ -8,5 +8,8 @@ Then activate environment and add channels:
 conda config --env --add channels conda-forge
 ```
 ```
+conda config --env --add channels plotly
+```
+```
 conda config --env --add channels pytorch
 ```

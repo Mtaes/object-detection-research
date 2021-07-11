@@ -6,12 +6,13 @@ from utils import get_coco_stats
 
 
 class ObjectDetector(LightningModule):
-    def __init__(self, model, learning_rate, optimizer_fn, lr_scheduler_fn=None):
+    def __init__(self, model, learning_rate, optimizer_fn, lr_scheduler_fn=None, update_lr_scheduler: bool = False):
         super().__init__()
         self.model = model
         self.learning_rate = learning_rate
         self.optimizer_fn = optimizer_fn
         self.lr_scheduler_fn = lr_scheduler_fn
+        self.update_lr_scheduler = update_lr_scheduler
 
     def forward(self, x):
         preds = self.model(x)
@@ -31,7 +32,16 @@ class ObjectDetector(LightningModule):
         optimizer = self.optimizer_fn(self.parameters(), self.learning_rate)
         if self.lr_scheduler_fn is not None:
             lr_scheduler = self.lr_scheduler_fn(optimizer)
-            return {'optimizer': optimizer, 'lr_scheduler': lr_scheduler}
+            if self.update_lr_scheduler:
+                return {
+                    'optimizer': optimizer,
+                    'lr_scheduler': {
+                        'scheduler': lr_scheduler,
+                        'monitor': 'coco_stat_0'
+                        }
+                    }
+            else:
+                return {'optimizer': optimizer, 'lr_scheduler': lr_scheduler}
         else:
             return optimizer
     

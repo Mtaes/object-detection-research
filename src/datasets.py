@@ -8,6 +8,7 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 from PIL import Image
 from pytorch_lightning import LightningDataModule
+from albumentations import Compose
 
 from transforms import get_to_tensor
 from coco.utils import collate_fn
@@ -24,7 +25,7 @@ def get_dataset_split(root, split_id) -> dict:
 
 class BeesDataset(Dataset):
     'Represents BeesDataset for dataloaders.'
-    def __init__(self, root, split, transforms=None):
+    def __init__(self, root: str, split: list, transforms: Optional[Compose] = None):
         self.root = root
         self.transforms = get_to_tensor() if transforms is None else transforms
         with open(os.path.join(root, 'boxes.json'), 'r') as input_file:

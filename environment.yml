@@ -1,6 +1,7 @@
 name: odrenv
 channels:
   - pytorch
+  - plotly
   - conda-forge
   - defaults
 dependencies:
@@ -17,3 +18,5 @@ dependencies:
   - pycocotools
   - imgaug
   - albumentations
+  - plotly
+  - optuna
