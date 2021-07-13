@@ -3,7 +3,8 @@ from typing import Optional, Union
 from pathlib import Path
 
 import torch
-from pytorch_lightning import Trainer
+from torch.optim import SGD, lr_scheduler
+from pytorch_lightning import Trainer, LightningDataModule
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import LearningRateMonitor, EarlyStopping, ModelCheckpoint
 from optuna.trial import Trial
@@ -59,3 +60,30 @@ def get_study_storage():
     storage_dir = os.path.join('..', 'logs', 'experiment')
     Path(storage_dir).mkdir(parents=True, exist_ok=True)
     return 'sqlite:///{}'.format(os.path.join(storage_dir, 'studies.db'))
+
+
+def get_SGD_objective_fn(get_model_fn, data_module: LightningDataModule, SGD_momentum: Union[float, tuple], SGD_weight_decay: Union[float, tuple],
+                        RLROP_factor: Union[float, tuple], learning_rate: Union[float, tuple], max_epochs: int, limit_train_batches: Union[int, float],
+                        SGD_nesterov: Optional[bool] = None):
+    def objective(trial: Trial):
+        def suggest_float_wrapper(name: str, args: Union[float, tuple]):
+            return args if isinstance(args, float) else trial.suggest_float(name=name, low=args[0], high=args[1], log=args[2])
+        momentum = suggest_float_wrapper('SGD_momentum', SGD_momentum)
+        weight_decay = suggest_float_wrapper('SGD_weight_decay', SGD_weight_decay)
+        nesterov = SGD_nesterov if isinstance(SGD_nesterov, bool) else trial.suggest_categorical('SGD_nesterov', [True, False])
+        def optimizer_fn(params, lr):
+            return SGD(params, lr=lr, momentum=momentum, weight_decay=weight_decay, nesterov=nesterov)
+        factor = suggest_float_wrapper('ReduceLROnPlateau_factor', RLROP_factor)
+        def lr_scheduler_fn(optimizer):
+            return lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=factor, patience=2)
+        lr = suggest_float_wrapper('learning_rate', learning_rate)
+        model = get_model_fn(lr, optimizer_fn, lr_scheduler_fn, update_lr_scheduler=True)
+        trainer = get_trainer(max_epochs=max_epochs, trial=trial, limit_train_batches=limit_train_batches)
+        try:
+            trainer.fit(model, datamodule=data_module)
+        except ValueError as err:
+            print(err)
+            return None
+        else:
+            return trainer.callback_metrics['coco_stat_0'].item()
+    return objective
