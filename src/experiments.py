@@ -369,6 +369,33 @@ def experiment_14():
     study.optimize(objective, n_trials=None, timeout=8.8 * 60 * 60)
 
 
+def experiment_15():
+    'Using the best parameters from the experiment_14.'
+    ID = 15
+    seed_everything(SEED, workers=True)
+    data_module = BeesDataModule(
+        split_id=2,
+        batch_size=4,
+        transforms={'train': get_horizontal_flip(), 'validate': get_resize_image(), 'test': get_resize_image()}
+    )
+    model = fasterrcnn_resnet50_fpn(pretrained=True)
+    in_features = model.roi_heads.box_predictor.cls_score.in_features
+    model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
+    def optimizer_fn(params, lr):
+        return SGD(params, lr=lr, momentum=.7090120407541565, weight_decay=3.342176445601065e-05, nesterov=True)
+    def lr_scheduler_fn(optimizer):
+        return lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=.4168466198980363, patience=2)
+    model = ObjectDetector(model, .014809998752107811, optimizer_fn, lr_scheduler_fn, update_lr_scheduler=True)
+    trainer = get_trainer(
+        max_epochs=30,
+        min_delta=1e-4,
+        patience=10,
+        version=ID
+    )
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
+
+
 EXPERIMENTS_DICT = {
     '1': experiment_1,
     '2': experiment_2,
@@ -384,4 +411,5 @@ EXPERIMENTS_DICT = {
     '12': experiment_12,
     '13': experiment_13,
     '14': experiment_14,
+    '15': experiment_15,
 }
