@@ -357,13 +357,12 @@ def experiment_14():
     objective = get_SGD_objective_fn(
         get_model_fn=get_model,
         data_module=data_module,
-        SGD_momentum=(.5, 1., False),
+        SGD_momentum=(.2, 1., False),
         SGD_weight_decay=(1e-7, 1e-1, True),
-        RLROP_factor=(.3, .5, False),
-        learning_rate=(1e-4, 1e-1, True),
+        RLROP_factor=(.1, .5, False),
+        learning_rate=(1e-4, 1e-2, True),
         max_epochs=10,
-        limit_train_batches=.6,
-        SGD_nesterov=True
+        limit_train_batches=.6
     )
     study = optuna.create_study(study_name=f'experiment_{ID}', storage=get_study_storage(), direction='maximize', pruner=optuna.pruners.MedianPruner(), load_if_exists=True)
     study.optimize(objective, n_trials=None, timeout=8.8 * 60 * 60)
