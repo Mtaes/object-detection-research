@@ -381,10 +381,10 @@ def experiment_15():
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
     def optimizer_fn(params, lr):
-        return SGD(params, lr=lr, momentum=.7090120407541565, weight_decay=3.342176445601065e-05, nesterov=True)
+        return SGD(params, lr=lr, momentum=.8162894810140822, weight_decay=2.866805255260386e-05, nesterov=True)
     def lr_scheduler_fn(optimizer):
-        return lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=.4168466198980363, patience=2)
-    model = ObjectDetector(model, .014809998752107811, optimizer_fn, lr_scheduler_fn, update_lr_scheduler=True)
+        return lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=.31027532484623377, patience=2)
+    model = ObjectDetector(model, .005858786517220363, optimizer_fn, lr_scheduler_fn, update_lr_scheduler=True)
     trainer = get_trainer(
         max_epochs=30,
         min_delta=1e-4,
