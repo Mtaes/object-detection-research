@@ -23,7 +23,9 @@ class ObjectDetector(LightningModule):
         self.log('step_start', time())
         x, y = batch
         loss_dict = self.model(x, y)
-        loss_dict['loss'] = sum(loss_dict.values())
+        loss = sum(loss_dict.values())
+        loss_dict = {key: item.detach() for key, item in loss_dict.items()}
+        loss_dict['loss'] = loss
         self.log('step_end', time())
         self.log_dict(loss_dict)
         return loss_dict
