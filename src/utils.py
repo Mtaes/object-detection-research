@@ -3,7 +3,7 @@ from typing import Optional, Union
 from pathlib import Path
 
 import torch
-from torch.optim import SGD, lr_scheduler
+from torch.optim import SGD, lr_scheduler, Adam
 from pytorch_lightning import Trainer, LightningDataModule
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import LearningRateMonitor, EarlyStopping, ModelCheckpoint
@@ -78,6 +78,29 @@ def get_SGD_objective_fn(get_model_fn, data_module: LightningDataModule, SGD_mom
             return lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=factor, patience=2)
         lr = suggest_float_wrapper('learning_rate', learning_rate)
         model = get_model_fn(lr, optimizer_fn, lr_scheduler_fn, update_lr_scheduler=True)
+        trainer = get_trainer(max_epochs=max_epochs, trial=trial, limit_train_batches=limit_train_batches)
+        try:
+            trainer.fit(model, datamodule=data_module)
+        except ValueError as err:
+            print(err)
+            return None
+        else:
+            return trainer.callback_metrics['coco_stat_0'].item()
+    return objective
+
+
+def get_Adam_objective_fn(get_model_fn, data_module: LightningDataModule, learning_rate: tuple, beta1: tuple, beta2: tuple, epsilon: tuple,
+                        max_epochs: int, limit_train_batches: Union[int, float]):
+    def objective(trial: Trial):
+        betas = (
+            trial.suggest_float(name='beta1', low=beta1[0], high=beta1[1], log=beta1[2]),
+            trial.suggest_float(name='beta2', low=beta2[0], high=beta2[1], log=beta2[2])
+        )
+        eps = trial.suggest_float(name='epsilon', low=epsilon[0], high=epsilon[1], log=epsilon[2])
+        def optimizer_fn(params, lr):
+            return Adam(params, lr, betas, eps)
+        lr = trial.suggest_float(name='learning_rate', low=learning_rate[0], high=learning_rate[1], log=learning_rate[2])
+        model = get_model_fn(lr, optimizer_fn)
         trainer = get_trainer(max_epochs=max_epochs, trial=trial, limit_train_batches=limit_train_batches)
         try:
             trainer.fit(model, datamodule=data_module)
