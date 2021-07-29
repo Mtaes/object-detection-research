@@ -450,6 +450,34 @@ def experiment_17():
     study.optimize(objective, n_trials=None, timeout=8.8 * 60 * 60)
 
 
+def experiment_18():
+    ID = 18
+    seed_everything(SEED, workers=True)
+    def get_model(lr, optimizer_fn):
+        model = fasterrcnn_resnet50_fpn(pretrained=True)
+        in_features = model.roi_heads.box_predictor.cls_score.in_features
+        model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
+        model = ObjectDetector(model, lr, optimizer_fn)
+        return model
+    data_module = BeesDataModule(
+        split_id=2,
+        batch_size=4,
+        transforms={'train': get_horizontal_flip(), 'validate': get_resize_image(), 'test': get_resize_image()}
+    )
+    objective = get_Adam_objective_fn(
+        get_model_fn=get_model,
+        data_module=data_module,
+        learning_rate=(1e-6, 2e-3, True),
+        beta1=(.1, 1., False),
+        beta2=(.1, 1., False),
+        epsilon=(1e-11, 1., True),
+        max_epochs=10,
+        limit_train_batches=.3
+    )
+    study = optuna.create_study(study_name=f'experiment_{ID}', storage=get_study_storage(), direction='maximize', pruner=optuna.pruners.MedianPruner(), load_if_exists=True)
+    study.optimize(objective, n_trials=None, timeout=8.8 * 60 * 60)
+
+
 EXPERIMENTS_DICT = {
     '1': experiment_1,
     '2': experiment_2,
@@ -468,4 +496,5 @@ EXPERIMENTS_DICT = {
     '15': experiment_15,
     '16': experiment_16,
     '17': experiment_17,
+    '18': experiment_18,
 }
