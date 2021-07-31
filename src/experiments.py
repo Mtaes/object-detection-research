@@ -495,7 +495,7 @@ def experiment_19():
     objective = get_Adam_objective_fn(
         get_model_fn=get_model,
         data_module=data_module,
-        learning_rate=(1e-6, 2e-3, True),
+        learning_rate=(1e-6, 1e-3, True),
         beta1=(.1, 1., False),
         beta2=(.1, 1., False),
         epsilon=(1e-11, 1., True),
