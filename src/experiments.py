@@ -556,6 +556,31 @@ def experiment_21():
     trainer.test(datamodule=data_module)
 
 
+def experiment_22():
+    'Using the best parameters from the experiment_18.'
+    ID = 22
+    seed_everything(SEED, workers=True)
+    data_module = BeesDataModule(
+        split_id=2,
+        batch_size=4,
+        transforms={'train': get_horizontal_flip(), 'validate': get_resize_image(), 'test': get_resize_image()}
+    )
+    model = fasterrcnn_resnet50_fpn(pretrained=True)
+    in_features = model.roi_heads.box_predictor.cls_score.in_features
+    model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
+    def optimizer_fn(params, lr):
+        return Adam(params, lr=lr, betas=(.5341224854215595, .14805658519061204), eps=.00012768810784994326)
+    model = ObjectDetector(model, 2.2564072901903894e-05, optimizer_fn)
+    trainer = get_trainer(
+        max_epochs=30,
+        min_delta=1e-4,
+        patience=10,
+        version=ID
+    )
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
+
+
 EXPERIMENTS_DICT = {
     '1': experiment_1,
     '2': experiment_2,
@@ -578,4 +603,5 @@ EXPERIMENTS_DICT = {
     '19': experiment_19,
     '20': experiment_20,
     '21': experiment_21,
+    '22': experiment_22,
 }
