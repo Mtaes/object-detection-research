@@ -50,7 +50,7 @@ class BeesDataset(Dataset):
         img = Image.open(img_path).convert('RGB')
         transformed = self.transforms(image=np.asarray(img), bboxes=boxes, labels=labels, iscrowd=iscrowd)
         target = {}
-        target['boxes'] = torch.as_tensor(transformed['bboxes'], dtype=torch.float32)
+        target['boxes'] = torch.as_tensor(transformed['bboxes'], dtype=torch.float32) if len(transformed['bboxes']) > 0 else torch.zeros((0,4), dtype=torch.float32)
         target['labels'] = torch.as_tensor(transformed['labels'], dtype=torch.int64)
         target['image_id'] = image_id
         target['area'] = (lambda boxes: (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0]))(target['boxes'])

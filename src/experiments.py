@@ -5,7 +5,7 @@ from torch.optim import SGD, lr_scheduler, Adam
 import optuna
 
 from datasets import BeesDataModule
-from utils import get_trainer, get_study_storage, get_SGD_objective_fn, get_Adam_objective_fn
+from utils import get_trainer, get_study_storage, get_SGD_objective_fn, get_Adam_objective_fn, get_transform_objective_fn
 from models import ObjectDetector
 from transforms import get_horizontal_flip, get_resize_image
 
@@ -581,6 +581,36 @@ def experiment_22():
     trainer.test(datamodule=data_module)
 
 
+def experiment_23():
+    'Use best params from experiment 18 for transform search'
+    ID = 23
+    seed_everything(SEED, workers=True)
+    def get_model_fn():
+        lr = 2.2564072901903894e-05
+        def optimizer_fn(params, lr):
+            return Adam(params, lr, betas=(.5341224854215595, .14805658519061204), eps=.00012768810784994326)
+        model = fasterrcnn_resnet50_fpn(pretrained=True)
+        in_features = model.roi_heads.box_predictor.cls_score.in_features
+        model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
+        model = ObjectDetector(model, lr, optimizer_fn)
+        return model
+    def get_data_module_fn(train_transforms):
+        data_module = BeesDataModule(
+            split_id=2,
+            batch_size=4,
+            transforms={'train': train_transforms, 'validate': get_resize_image(), 'test': get_resize_image()}
+        )
+        return data_module
+    objective = get_transform_objective_fn(
+        get_model_fn=get_model_fn,
+        get_data_module_fn=get_data_module_fn,
+        max_epochs=10,
+        limit_train_batches=.3
+    )
+    study = optuna.create_study(study_name=f'experiment_{ID}', storage=get_study_storage(), direction='maximize', pruner=optuna.pruners.MedianPruner(), load_if_exists=True)
+    study.optimize(objective, n_trials=None, timeout=8.8 * 60 * 60)
+
+
 EXPERIMENTS_DICT = {
     '1': experiment_1,
     '2': experiment_2,
@@ -604,4 +634,5 @@ EXPERIMENTS_DICT = {
     '20': experiment_20,
     '21': experiment_21,
     '22': experiment_22,
+    '23': experiment_23,
 }

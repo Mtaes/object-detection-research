@@ -12,6 +12,7 @@ from optuna.integration import PyTorchLightningPruningCallback
 
 from coco.coco_utils import convert_to_coco_api
 from coco.coco_eval import CocoEvaluator
+from transforms import get_transforms_test
 
 
 def get_coco_stats(preds, gt):
@@ -101,6 +102,29 @@ def get_Adam_objective_fn(get_model_fn, data_module: LightningDataModule, learni
             return Adam(params, lr, betas, eps)
         lr = trial.suggest_float(name='learning_rate', low=learning_rate[0], high=learning_rate[1], log=learning_rate[2])
         model = get_model_fn(lr, optimizer_fn)
+        trainer = get_trainer(max_epochs=max_epochs, trial=trial, limit_train_batches=limit_train_batches)
+        try:
+            trainer.fit(model, datamodule=data_module)
+        except ValueError as err:
+            print(err)
+            return None
+        else:
+            return trainer.callback_metrics['coco_stat_0'].item()
+    return objective
+
+
+def get_transform_objective_fn(get_model_fn, get_data_module_fn, max_epochs, limit_train_batches):
+    def objective(trial: Trial):
+        train_transforms = get_transforms_test(
+            h_flip=trial.suggest_categorical('h_flip', (True, False)),
+            rotate=trial.suggest_categorical('rotate', (True, False)),
+            random_crop=trial.suggest_categorical('random_crop', (True, False)),
+            blur=trial.suggest_categorical('blur', (True, False)),
+            gauss_noise=trial.suggest_categorical('gauss_noise', (True, False)),
+            equalize_trans=trial.suggest_categorical('equalize', (True, False))
+        )
+        data_module = get_data_module_fn(train_transforms)
+        model = get_model_fn()
         trainer = get_trainer(max_epochs=max_epochs, trial=trial, limit_train_batches=limit_train_batches)
         try:
             trainer.fit(model, datamodule=data_module)

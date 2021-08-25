@@ -1,5 +1,7 @@
 import albumentations as A
+from albumentations.augmentations.functional import equalize
 from torchvision.transforms import functional as F
+import cv2
 
 
 class ToTensor(A.BasicTransform):
@@ -42,5 +44,29 @@ def get_horizontal_flip(p=.5):
             A.augmentations.geometric.resize.LongestMaxSize(max_size=1333),
             ToTensor()
         ],
+        bbox_params=A.BboxParams(format='pascal_voc', label_fields=['labels', 'iscrowd'])
+    )
+
+
+def get_transforms_test(h_flip=False, rotate=False, random_crop=False, blur=False, gauss_noise=False, equalize_trans=False):
+    transforms_list = []
+    if h_flip:
+        transforms_list.append(A.HorizontalFlip())
+    if rotate:
+        transforms_list.append(A.augmentations.geometric.rotate.Rotate(border_mode=cv2.BORDER_CONSTANT))
+    if random_crop:
+        transforms_list.append(A.augmentations.crops.transforms.RandomCrop(500, 500, p=.5))
+    if blur:
+        transforms_list.append(A.augmentations.transforms.Blur())
+    if gauss_noise:
+        transforms_list.append(A.augmentations.transforms.GaussNoise())
+    if equalize_trans:
+        transforms_list.append(A.augmentations.transforms.Equalize())
+    transforms_list.extend((
+        A.augmentations.geometric.resize.LongestMaxSize(max_size=1333),
+        ToTensor()
+    ))
+    return A.Compose(
+        transforms_list,
         bbox_params=A.BboxParams(format='pascal_voc', label_fields=['labels', 'iscrowd'])
     )
