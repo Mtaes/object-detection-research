@@ -7,7 +7,7 @@ import optuna
 from datasets import BeesDataModule
 from utils import get_trainer, get_study_storage, get_SGD_objective_fn, get_Adam_objective_fn, get_transform_objective_fn
 from models import ObjectDetector
-from transforms import get_horizontal_flip, get_resize_image
+from transforms import get_horizontal_flip, get_resize_image, get_transforms_test
 
 
 SEED = 42
@@ -641,6 +641,35 @@ def experiment_24():
     study.optimize(objective, n_trials=None, timeout=8.8 * 60 * 60)
 
 
+def experiment_25():
+    'Using the best parameters from the experiment_19 and transforms from the experiment_24.'
+    ID = 25
+    seed_everything(SEED, workers=True)
+    data_module = BeesDataModule(
+        split_id=2,
+        batch_size=4,
+        transforms={
+            'train': get_transforms_test(blur=True, equalize_trans=True, gauss_noise=True, h_flip=True),
+            'validate': get_resize_image(),
+            'test': get_resize_image()
+        }
+    )
+    model = fasterrcnn_resnet50_fpn(pretrained=True)
+    in_features = model.roi_heads.box_predictor.cls_score.in_features
+    model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
+    def optimizer_fn(params, lr):
+        return Adam(params, lr=lr, betas=(.9829382245174512, .7877180204367489), eps=.025608314414080815)
+    model = ObjectDetector(model, .00027172301931541036, optimizer_fn)
+    trainer = get_trainer(
+        max_epochs=30,
+        min_delta=1e-4,
+        patience=10,
+        version=ID
+    )
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
+
+
 EXPERIMENTS_DICT = {
     '1': experiment_1,
     '2': experiment_2,
@@ -666,4 +695,5 @@ EXPERIMENTS_DICT = {
     '22': experiment_22,
     '23': experiment_23,
     '24': experiment_24,
+    '25': experiment_25,
 }
