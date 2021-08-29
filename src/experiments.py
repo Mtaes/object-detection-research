@@ -700,6 +700,34 @@ def experiment_26():
     study.optimize(objective, n_trials=None, timeout=8.8 * 60 * 60)
 
 
+def experiment_27():
+    ID = 27
+    seed_everything(SEED, workers=True)
+    def get_model(lr, optimizer_fn, lr_scheduler_fn, update_lr_scheduler):
+        anchor_generator = AnchorGenerator(sizes=((32, 64, 128, 256, 512),), aspect_ratios=((0.5, 1.0, 2.0),))
+        backbone = mobilenet_backbone('mobilenet_v2', pretrained=True, fpn=False)
+        model = FasterRCNN(backbone, num_classes=2, rpn_anchor_generator=anchor_generator)
+        model = ObjectDetector(model, lr, optimizer_fn, lr_scheduler_fn, update_lr_scheduler)
+        return model
+    data_module = BeesDataModule(
+        split_id=2,
+        batch_size=4,
+        transforms={'train': get_horizontal_flip(), 'validate': get_resize_image(), 'test': get_resize_image()}
+    )
+    objective = get_SGD_objective_fn(
+        get_model_fn=get_model,
+        data_module=data_module,
+        SGD_momentum=(0., 1., False),
+        SGD_weight_decay=(1e-7, 1e-1, True),
+        RLROP_factor=(.1, .5, False),
+        learning_rate=(1e-5, 1e-2, True),
+        max_epochs=10,
+        limit_train_batches=.6
+    )
+    study = optuna.create_study(study_name=f'experiment_{ID}', storage=get_study_storage(), direction='maximize', pruner=optuna.pruners.MedianPruner(), load_if_exists=True)
+    study.optimize(objective, n_trials=None, timeout=8.8 * 60 * 60)
+
+
 EXPERIMENTS_DICT = {
     '1': experiment_1,
     '2': experiment_2,
@@ -727,4 +755,5 @@ EXPERIMENTS_DICT = {
     '24': experiment_24,
     '25': experiment_25,
     '26': experiment_26,
+    '27': experiment_27,
 }
