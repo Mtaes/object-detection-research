@@ -728,6 +728,33 @@ def experiment_27():
     study.optimize(objective, n_trials=None, timeout=8.8 * 60 * 60)
 
 
+def experiment_28():
+    'Using the best parameters from the experiment_27.'
+    ID = 28
+    seed_everything(SEED, workers=True)
+    data_module = BeesDataModule(
+        split_id=2,
+        batch_size=4,
+        transforms={'train': get_horizontal_flip(), 'validate': get_resize_image(), 'test': get_resize_image()}
+    )
+    anchor_generator = AnchorGenerator(sizes=((32, 64, 128, 256, 512),), aspect_ratios=((0.5, 1.0, 2.0),))
+    backbone = mobilenet_backbone('mobilenet_v2', pretrained=True, fpn=False)
+    model = FasterRCNN(backbone, num_classes=2, rpn_anchor_generator=anchor_generator)
+    def optimizer_fn(params, lr):
+        return SGD(params, lr=lr, momentum=.5610866722340018, weight_decay=1.0038346656017304e-06, nesterov=False)
+    def lr_scheduler_fn(optimizer):
+        return lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=.24684274350020477, patience=2)
+    model = ObjectDetector(model, .009968052280574959, optimizer_fn, lr_scheduler_fn, update_lr_scheduler=True)
+    trainer = get_trainer(
+        max_epochs=30,
+        min_delta=1e-4,
+        patience=10,
+        version=ID
+    )
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
+
+
 EXPERIMENTS_DICT = {
     '1': experiment_1,
     '2': experiment_2,
@@ -756,4 +783,5 @@ EXPERIMENTS_DICT = {
     '25': experiment_25,
     '26': experiment_26,
     '27': experiment_27,
+    '28': experiment_28,
 }
