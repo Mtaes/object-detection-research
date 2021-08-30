@@ -1,5 +1,5 @@
 from pytorch_lightning import seed_everything
-from torchvision.models.detection import fasterrcnn_resnet50_fpn, FasterRCNN
+from torchvision.models.detection import fasterrcnn_resnet50_fpn, FasterRCNN, ssd300_vgg16
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.rpn import AnchorGenerator
 from torchvision.models.detection.backbone_utils import mobilenet_backbone
@@ -755,6 +755,32 @@ def experiment_28():
     trainer.test(datamodule=data_module)
 
 
+def experiment_29():
+    ID = 29
+    seed_everything(SEED, workers=True)
+    def get_model(lr, optimizer_fn, lr_scheduler_fn, update_lr_scheduler):
+        model = ssd300_vgg16(num_classes=2)
+        model = ObjectDetector(model, lr, optimizer_fn, lr_scheduler_fn, update_lr_scheduler)
+        return model
+    data_module = BeesDataModule(
+        split_id=2,
+        batch_size=4,
+        transforms={'train': get_horizontal_flip(), 'validate': get_resize_image(), 'test': get_resize_image()}
+    )
+    objective = get_SGD_objective_fn(
+        get_model_fn=get_model,
+        data_module=data_module,
+        SGD_momentum=(0., 1., False),
+        SGD_weight_decay=(1e-7, 1e-1, True),
+        RLROP_factor=(.1, .5, False),
+        learning_rate=(1e-5, 1e-3, True),
+        max_epochs=10,
+        limit_train_batches=.3
+    )
+    study = optuna.create_study(study_name=f'experiment_{ID}', storage=get_study_storage(), direction='maximize', pruner=optuna.pruners.MedianPruner(), load_if_exists=True)
+    study.optimize(objective, n_trials=None, timeout=8.8 * 60 * 60)
+
+
 EXPERIMENTS_DICT = {
     '1': experiment_1,
     '2': experiment_2,
@@ -784,4 +810,5 @@ EXPERIMENTS_DICT = {
     '26': experiment_26,
     '27': experiment_27,
     '28': experiment_28,
+    '29': experiment_29,
 }
