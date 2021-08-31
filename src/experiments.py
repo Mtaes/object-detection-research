@@ -807,6 +807,31 @@ def experiment_30():
     study.optimize(objective, n_trials=None, timeout=5.5 * 60 * 60)
 
 
+def experiment_31():
+    'Using the best parameters from the experiment_30.'
+    ID = 31
+    seed_everything(SEED, workers=True)
+    data_module = BeesDataModule(
+        split_id=2,
+        batch_size=4,
+        transforms={'train': get_horizontal_flip(), 'validate': get_resize_image(), 'test': get_resize_image()}
+    )
+    model = ssd300_vgg16(num_classes=2)
+    def optimizer_fn(params, lr):
+        return SGD(params, lr=lr, momentum=.9010495789282431, weight_decay=.07477941573189864, nesterov=False)
+    def lr_scheduler_fn(optimizer):
+        return lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=.31930271676788574, patience=2)
+    model = ObjectDetector(model, .00026381716714924595, optimizer_fn, lr_scheduler_fn, update_lr_scheduler=True)
+    trainer = get_trainer(
+        max_epochs=30,
+        min_delta=1e-4,
+        patience=10,
+        version=ID
+    )
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
+
+
 EXPERIMENTS_DICT = {
     '1': experiment_1,
     '2': experiment_2,
@@ -838,4 +863,5 @@ EXPERIMENTS_DICT = {
     '28': experiment_28,
     '29': experiment_29,
     '30': experiment_30,
+    '31': experiment_31,
 }
