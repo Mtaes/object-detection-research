@@ -660,8 +660,8 @@ def experiment_25():
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
     def optimizer_fn(params, lr):
-        return Adam(params, lr=lr, betas=(.9829382245174512, .7877180204367489), eps=.025608314414080815)
-    model = ObjectDetector(model, .00027172301931541036, optimizer_fn)
+        return Adam(params, lr=lr, betas=(.8690414117588908, .7909366476177144), eps=.05037832040451959)
+    model = ObjectDetector(model, .0008392672923136335, optimizer_fn)
     trainer = get_trainer(
         max_epochs=30,
         min_delta=1e-4,
