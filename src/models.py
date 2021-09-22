@@ -126,9 +126,9 @@ class ObjectDetector(LightningModule):
         for step in validation_step_outputs:
             unpacked_outputs.extend(step)
         unpacked_outputs.sort(key=lambda x: x[1])
-        for output in unpacked_outputs[: self.al_add]:
+        for output in unpacked_outputs[: min(self.al_add, len(unpacked_outputs))]:
             self.al_data[0].append(self.al_data[1][output[0]])
-        to_remove = unpacked_outputs[: self.al_add]
+        to_remove = unpacked_outputs[: min(self.al_add, len(unpacked_outputs))]
         to_remove.sort(key=lambda x: x[0], reverse=True)
         for output in to_remove:
             self.al_data[1].pop(output[0])
@@ -140,7 +140,7 @@ class ObjectDetector(LightningModule):
             return self._val_test_step(batch)
 
     def validation_epoch_end(self, validation_step_outputs):
-        if self.al_data is not None:
+        if self.al_data is not None and len(self.al_data[1]) > 0:
             self._al_val(validation_step_outputs[1])
             validation_step_outputs = validation_step_outputs[0]
         coco_dict = self._coco_eval(validation_step_outputs)
