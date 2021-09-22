@@ -29,7 +29,7 @@ def get_coco_stats(preds, gt):
 
 
 def get_trainer(max_epochs: int, min_delta: Optional[float] = None, patience: Optional[int] = None, version=None, auto_lr_find: bool = False,
-                max_time: str = '00:08:40:00', trial: Optional[Trial] = None, limit_train_batches: Union[int, float] = 1.):
+                max_time: str = '00:08:40:00', trial: Optional[Trial] = None, limit_train_batches: Union[int, float] = 1., al_reload_dataloaders: bool = False):
     if trial is None:
         callbacks = [
             LearningRateMonitor(logging_interval='step'),
@@ -52,7 +52,8 @@ def get_trainer(max_epochs: int, min_delta: Optional[float] = None, patience: Op
         checkpoint_callback=True if trial is None else False,
         terminate_on_nan=True,
         num_sanity_val_steps=0,
-        limit_train_batches=limit_train_batches
+        limit_train_batches=limit_train_batches,
+        reload_dataloaders_every_n_epochs=1 if al_reload_dataloaders else 0
     )
     return trainer
 

@@ -4,6 +4,7 @@ from typing import Optional
 from multiprocessing import cpu_count
 
 import torch
+from torch.utils import data
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 from PIL import Image
@@ -25,12 +26,16 @@ def get_dataset_split(root, split_id) -> dict:
 
 class BeesDataset(Dataset):
     'Represents BeesDataset for dataloaders.'
-    def __init__(self, root: str, split: list, transforms: Optional[Compose] = None):
+    def __init__(self, root: str, split: list, transforms: Optional[Compose] = None, data_list: Optional[list] = None):
         self.root = root
         self.transforms = get_to_tensor() if transforms is None else transforms
         with open(os.path.join(root, 'boxes.json'), 'r') as input_file:
             self.data = json.load(input_file)
-        self.data = list(filter(lambda e: len(e['boxes']) > 0 and e['image_name'] in split, self.data))
+        if data_list is not None:
+            data_list.extend(list(filter(lambda e: len(e['boxes']) > 0 and e['image_name'] in split, self.data)))
+            self.data = data_list
+        else:
+            self.data = list(filter(lambda e: len(e['boxes']) > 0 and e['image_name'] in split, self.data))
 
     def __getitem__(self, idx):
         image_data = self.data[idx]
@@ -62,7 +67,7 @@ class BeesDataset(Dataset):
 
 
 class BeesDataModule(LightningDataModule):
-    def __init__(self, split_id, batch_size: int, transforms: Optional[dict] = None, num_workers: Optional[int] = None, data_dir: str = PATH_TO_BEESDATASET):
+    def __init__(self, split_id, batch_size: int, transforms: Optional[dict] = None, num_workers: Optional[int] = None, data_dir: str = PATH_TO_BEESDATASET, al_data_lists=None, al_split: float = .2):
         super().__init__()
         self.split_id = split_id
         self.batch_size = batch_size
@@ -72,15 +77,23 @@ class BeesDataModule(LightningDataModule):
         self.splits = None
         self.data_train = None
         self.data_val = None
+        self.data_val_al = None
         self.data_test = None
+        self.al_data_lists = al_data_lists
+        self.al_split = al_split
     
     def setup(self, stage: Optional[str]):
         if self.splits is None:
             self.splits = get_dataset_split(self.data_dir, self.split_id)
         if stage in (None, 'fit'):
-            self.data_train = BeesDataset(self.data_dir, self.splits['train'], self.transforms.get('train'))
+            if self.al_data_lists is not None:
+                self.data_train = BeesDataset(self.data_dir, self.splits['train'][:int(len(self.splits['train']) * self.al_split)], self.transforms.get('train'), data_list=self.al_data_lists[0])
+            else:
+                self.data_train = BeesDataset(self.data_dir, self.splits['train'], self.transforms.get('train'))
         if stage in (None, 'validate', 'fit'):
             self.data_val = BeesDataset(self.data_dir, self.splits['validate'], self.transforms.get('validate'))
+            if self.al_data_lists is not None:
+                self.data_val_al = BeesDataset(self.data_dir, self.splits['train'][int(len(self.splits['train']) * self.al_split):], self.transforms.get('validate'), data_list=self.al_data_lists[1])
         if stage in (None, 'test'):
             self.data_test = BeesDataset(self.data_dir, self.splits['test'], self.transforms.get('test'))
     
@@ -88,7 +101,13 @@ class BeesDataModule(LightningDataModule):
         return DataLoader(self.data_train, batch_size=self.batch_size, collate_fn=collate_fn, num_workers=self.num_workers, shuffle=True, pin_memory=True)
     
     def val_dataloader(self):
-        return DataLoader(self.data_val, batch_size=self.batch_size, collate_fn=collate_fn, num_workers=self.num_workers, pin_memory=True)
+        if self.al_data_lists is not None and len(self.data_val_al) > 0:
+            return [
+                    DataLoader(self.data_val, batch_size=self.batch_size, collate_fn=collate_fn, num_workers=self.num_workers, pin_memory=True),
+                    DataLoader(self.data_val_al, batch_size=self.batch_size, collate_fn=collate_fn, num_workers=self.num_workers, pin_memory=True)
+                ]
+        else:
+            return DataLoader(self.data_val, batch_size=self.batch_size, collate_fn=collate_fn, num_workers=self.num_workers, pin_memory=True)
     
     def test_dataloader(self):
         return DataLoader(self.data_test, batch_size=self.batch_size, collate_fn=collate_fn, num_workers=self.num_workers, pin_memory=True)
