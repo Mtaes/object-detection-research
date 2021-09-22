@@ -1137,6 +1137,59 @@ def experiment_33():
     trainer.test(datamodule=data_module)
 
 
+def experiment_34():
+    "Using the parameters from the experiment_15."
+    ID = 34
+    seed_everything(SEED, workers=True)
+    train, al_val = [], []
+    data_module = BeesDataModule(
+        split_id=2,
+        batch_size=4,
+        transforms={
+            "train": get_horizontal_flip(),
+            "validate": get_resize_image(),
+            "test": get_resize_image(),
+        },
+        al_data_lists=(train, al_val),
+    )
+    model = fasterrcnn_resnet50_fpn(pretrained=True)
+    in_features = model.roi_heads.box_predictor.cls_score.in_features
+    model.roi_heads.box_predictor = FastRCNNPredictor(in_features, 2)
+
+    def optimizer_fn(params, lr):
+        return SGD(
+            params,
+            lr=lr,
+            momentum=0.8162894810140822,
+            weight_decay=2.866805255260386e-05,
+            nesterov=True,
+        )
+
+    def lr_scheduler_fn(optimizer):
+        return lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode="max", factor=0.31027532484623377, patience=2
+        )
+
+    model = ObjectDetector(
+        model,
+        0.005858786517220363,
+        optimizer_fn,
+        lr_scheduler_fn,
+        update_lr_scheduler=True,
+        al_data=(train, al_val),
+        al_add=100,
+    )
+    trainer = get_trainer(
+        max_epochs=30,
+        min_delta=1e-4,
+        patience=6,
+        version=ID,
+        al_reload_dataloaders=True,
+    )
+    trainer.fit(model, datamodule=data_module)
+    trainer.test(datamodule=data_module)
+
+
 EXPERIMENTS_DICT = {
     "1": experiment_1,
     "2": experiment_2,
@@ -1171,4 +1224,5 @@ EXPERIMENTS_DICT = {
     "31": experiment_31,
     "32": experiment_32,
     "33": experiment_33,
+    "34": experiment_34,
 }
